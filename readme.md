@@ -1,0 +1,1 @@
+A helper class for create/delete/verify token in Laravel.
