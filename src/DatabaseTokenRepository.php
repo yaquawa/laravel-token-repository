@@ -8,6 +8,7 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Hashing\Hasher as HasherContract;
 use Yaquawa\Laravel\TokenRepository\Contracts\TokenRepository;
+use Illuminate\Database\Query\Builder;
 
 class DatabaseTokenRepository implements TokenRepository
 {
@@ -88,7 +89,7 @@ class DatabaseTokenRepository implements TokenRepository
      *
      * @return string
      */
-    public function create(Authenticatable $user)
+    public function create(Authenticatable $user): string
     {
         $this->deleteExisting($user);
 
@@ -122,7 +123,7 @@ class DatabaseTokenRepository implements TokenRepository
      *
      * @return array
      */
-    protected function getPayload(Authenticatable $user, string $token)
+    protected function getPayload(Authenticatable $user, string $token): array
     {
         $payLoad = ['user_id' => $user->getAuthIdentifier(), 'token' => $this->hasher->make($token), 'created_at' => new Carbon];
 
@@ -142,7 +143,7 @@ class DatabaseTokenRepository implements TokenRepository
      *
      * @return array|null
      */
-    public function find(Authenticatable $user, string $token)
+    public function find(Authenticatable $user, string $token): ?array
     {
         $record = (array)$this->getTable()->where(
             'user_id', $user->getAuthIdentifier()
@@ -175,7 +176,7 @@ class DatabaseTokenRepository implements TokenRepository
      *
      * @return bool
      */
-    protected function tokenExpired($createdAt)
+    protected function tokenExpired($createdAt): bool
     {
         return Carbon::parse($createdAt)->addSeconds($this->expires)->isPast();
     }
@@ -209,7 +210,7 @@ class DatabaseTokenRepository implements TokenRepository
      *
      * @return string
      */
-    public function createNewToken()
+    public function createNewToken(): string
     {
         return hash_hmac('sha256', Str::random(40), $this->hashKey);
     }
@@ -219,7 +220,7 @@ class DatabaseTokenRepository implements TokenRepository
      *
      * @return \Illuminate\Database\ConnectionInterface
      */
-    public function getConnection()
+    public function getConnection(): ConnectionInterface
     {
         return $this->connection;
     }
@@ -229,7 +230,7 @@ class DatabaseTokenRepository implements TokenRepository
      *
      * @return \Illuminate\Database\Query\Builder
      */
-    protected function getTable()
+    protected function getTable(): Builder
     {
         return $this->connection->table($this->table);
     }
@@ -239,7 +240,7 @@ class DatabaseTokenRepository implements TokenRepository
      *
      * @return \Illuminate\Contracts\Hashing\Hasher
      */
-    public function getHasher()
+    public function getHasher(): HasherContract
     {
         return $this->hasher;
     }
